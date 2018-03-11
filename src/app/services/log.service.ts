@@ -15,31 +15,39 @@ export class LogService {
   private logSource = new BehaviorSubject <Log>( {id: null, text: null, date: null} );
   selectedLog = this.logSource.asObservable();
 
-  private inputSource = new BehaviorSubject <true> (true);
-  inputClear = this.inputSource.asObservable();
+  private stateSource = new BehaviorSubject <boolean> (true);
+  stateClear = this.stateSource.asObservable();
 
   constructor() {
-    this.logs = [
-      {
-        id: '1',
-        text: 'Generated Components',
-        date: new Date('09.03.16 10:45:23')
-      },
-      {
-        id: '2',
-        text: 'Added Bootsrsap',
-        date: new Date('08.03.16 09:25:23')
-      },
-      {
-        id: '3',
-        text: 'Added logs components',
-        date: new Date('05.03.16 12:09:23')
-      },
-    ];
+    // this.logs = [
+    //   {
+    //     id: '1',
+    //     text: 'Generated Components',
+    //     date: new Date('09.03.16 10:45:23')
+    //   },
+    //   {
+    //     id: '2',
+    //     text: 'Added Bootsrsap',
+    //     date: new Date('08.03.16 09:25:23')
+    //   },
+    //   {
+    //     id: '3',
+    //     text: 'Added logs components',
+    //     date: new Date('05.03.16 12:09:23')
+    //   },
+    // ];
+    this.logs = [];
   }
 
   getLogs(): Observable<Log[]> {
-    return of(this.logs);
+    if (localStorage.getItem('logs') === null) {
+      this.logs = [];
+    } else {
+      this.logs = JSON.parse(localStorage.getItem('logs'));
+    }
+    return of(this.logs.sort((a, b) => {
+      return b.date = a.date;
+    }));
   }
 
   setFormLog(log: Log) {
@@ -48,6 +56,9 @@ export class LogService {
 
   addLog(log: Log) {
     this.logs.unshift(log);
+    // add to local storage
+    localStorage.setItem('logs', JSON.stringify(this.logs));
+
   }
 
   updateLog(log: Log) {
@@ -56,6 +67,10 @@ export class LogService {
         this.logs.splice(index, 1);
       }
     });
+    this.logs.unshift(log);
+
+    // update (the logs ) local storage
+    localStorage.setItem('logs', JSON.stringify(this.logs));
   }
   deleteLog(log: Log) {
     this.logs.forEach((currentLog, index) => {
@@ -63,10 +78,13 @@ export class LogService {
         this.logs.splice(index, 1);
       }
     });
+
+    // delete (the logs ) frfom local storage
+    localStorage.setItem('logs', JSON.stringify(this.logs));
   }
 
-  cleanInput() {
-    this.inputSource.next(true);
+  clearState() {
+    this.stateSource.next(true);
   }
 
 
